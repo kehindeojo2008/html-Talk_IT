@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sound Lounge</title>
+  <link rel="stylesheet" href="/static/sound.css">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #f7f9ec;
+    color: #d5d6da;
+    height: 100vh;
+    display:flex;
+    flex-direction: column;
+   
+  }
+  .navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: black;
+  color: white;
+  padding: 15px 20px;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  box-shadow:0 0 5px 0 #1f1f1f;
+}
+
+.logo {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: white;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.nav-links li a:hover {
+  color:#6b4fa7;
+}
+
+/* Hamburger Icon */
+.hamburger {
+  display: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: -250px; /* Hidden by default */
+  width: 250px;
+  height: 100%;
+  background: black;
+  padding-top: 60px;
+  transition: right 0.3s ease;
+  z-index: 999;
+}
+
+.sidebar a {
+  display: block;
+  padding: 15px 20px;
+  text-decoration: none;
+  color: white;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+.sidebar a:hover {
+  color: #6b4fa7;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 2rem;
+  cursor: pointer;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none; /* Hide nav links on mobile */
+  }
+
+  .hamburger {
+    display: block; /* Show hamburger icon */
+  }
+}
+
+
+
+
+  
+
+  .sound-lounge {
+    padding: 4rem 2rem;
+    max-width: 1100px;
+    margin: auto;
+    text-align: center;
+  }
+
+  .sound-lounge h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color:#6b4fa7;
+  }
+
+  .sound-lounge p {
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    margin-bottom: 3rem;
+  }
+
+  .tracks {
+    display: grid;
+    grid-template-columns:1fr, 1fr, 1fr;
+    gap: 2rem;
+  }
+
+  .track {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: left;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .track:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .track h3 {
+    color:#6b4fa7;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .track p {
+    font-size: 0.95rem;
+    color: #d5d6da;
+    margin-bottom: 1rem;
+  }
+
+  
+
+  .audio-player {
+    width: 100%;
+  }
+
+  audio {
+    width: 100%;
+    outline: none;
+    border-radius: 8px;
+    background-color:transparent;
+  }
+
+  @media (max-width: 700px) {
+    .sound-lounge h2 {
+      font-size: 2rem;
+    }
+
+    .sound-lounge p {
+      font-size: 1rem;
+    }
+  }
+ 
+/* Update for Mobile Devices: Single Column Stack */
+@media (max-width: 768px) {
+  .tracks {
+    display: grid;
+    /* Change from grid to a single column */
+    grid-template-columns: 1fr; 
+    gap: 1.5rem; /* Slightly reduce spacing for mobile screens */
+  }
+
+  .track {
+    width: 100%; /* Ensure the card takes up full available width */
+    margin-bottom: 0; /* Let the grid gap handle spacing */
+  }
+}
+  
+
+
+
+ .footer {
+    background-color: black;
+    color:#6b4fa7;
+    padding: 3rem 0; 
+}
+
+.footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    text-align: center;
+}
+
+.footer-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem; 
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+}
+
+.footer-link {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+.footer-link:hover {
+    color: #6b4fa7; 
+}
+
+.footer-disclaimer {
+    color: rgb(161, 150, 150); 
+    font-size: 0.75rem;
+    margin-top: 1.5rem;
+}
+ 
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">🧠 T I O Mental AI</div>
+    <ul class="nav-links">
+      <li><a href="#hero">Home</a></li>
+      <li><a href="#solutions">Solutions</a></li>
+      <li><a href="#vision">Vision</a></li>
+      <li><a href="#songs">Sounds</a></li>
+      <li><a href="#community">Community</a></li>
+    </ul>
+    <div class="hamburger" id="hamburger">&#9776;</div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <span class="close-btn" id="closeBtn">&times;</span>
+    <a href="#hero">Home</a>
+    <a href="#solutions">Solutions</a>
+    <a href="#vision">Vision</a>
+    <a href="#songs">Sounds</a>
+    <a href="#community">Community</a>
+
+  </div>
+
+  <section class="sound-lounge">
+    <h2>🎧 Mental Health Sound Lounge</h2>
+    <p>Explore soothing sounds and curated playlists to help you relax, reflect, and reset.</p>
+
+    <div class="tracks">
+      <div class="track">
+        <h3>Spiring - City Life </h3>
+        <p>Sharpens concentration with alpha/beta wave patterns</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="../static/Spiring - City Life (freetouse.com).mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>
+          
+        </div>
+      </div>
+
+      <div class="track">
+        <h3>Pufino - Hopeful</h3>
+        <p>A tranquil blend of ambient tones and soft harmonies designed to guide you into deep, peaceful meditation.
+        </p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="../static/Pufino - Hopeful (freetouse.com).mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+
+      <div class="track">
+        <h3>Zambolino - Surfing</h3>
+        <p>A gentle, ambient soundtrack for peaceful moments and inner calm.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="../static/Zambolino - Surfing (freetouse.com).mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+    <div class="track">
+      <h3>Tranquility</h3>
+      <p>A gentle, ambient soundtrack that soothes the soul and quiets the mind.</p>
+      <div class="audio-player">
+        <audio controls>
+          <source src="{{ url_for('static', filename='/bgmusic/2019-04-26_-_Tranquility_-_www.fesliyanstudios.com.mp3') }}" type="audio/mpeg">
+          Your browser does not support the audio element.
+        </audio>          
+      </div>
+    </div>
+    <div class="track">
+        <h3>Please Don't Cry</h3>
+        <p>A hauntingly gentle melody that comforts the soul.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2019-08-03_-_Please_Dont_Cry_-_David_Fesliyan.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+      <div class="track">
+        <h3>In The Light</h3>
+        <p>A gentle, uplifting soundtrack that evokes hope, clarity, and serene beginnings.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2019-12-13_-_In_The_Light_-_FesliyanStudios.com_-_David_Renda.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+      <div class="track">
+        <h3>Powerful</h3>
+        <p>A bold, cinematic soundtrack pulsing with strength, courage, and unstoppable energy.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2020-02-04_-_Powerful_-_David_Fesliyan.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+      <div class="track">
+        <h3>Painful Memories</h3>
+        <p> A hauntingly emotional score echoing loss, longing, and the quiet ache of the past.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2020-08-17_-_Painful_Memories_-_www.FesliyanStudios.com_Steve_Oxen.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+      <div class="track">
+        <h3>Our Hopes And Dreams</h3>
+        <p>A soaring, uplifting orchestral piece—gentle piano and warm strings weaving together to spark optimism and the courage to chase tomorrow.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2022-07-13_-_Our_Hopes_And_Dreams_-_www.FesliyanStudios.com.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+      <div class="track">
+        <h3>Swan Dive</h3>
+        <p>A graceful, immersive soundtrack that evokes the elegance and fluidity of a swan’s plunge—serene, flowing, and deeply moving.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2023-10-16_-_Swan_Dive_-_www.FesliyanStudios.com.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+      <div class="track">
+        <h3>Broken Inside</h3>
+        <p>A hauntingly emotional soundtrack that captures the depths of inner struggle and fragile vulnerability.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2024-10-28_-_Broken_Inside_-_www.FesliyanStudios.com.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+      <div class="track">
+        <h3>Wishing Well</h3>
+        <p>A dreamy, hopeful soundtrack that captures the magic of wishes and possibilities.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2025-02-04_-_Wishing_Well_-_www.FesliyanStudios.com_.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+      <div class="track">
+        <h3>Songbirds Cry</h3>
+        <p>A hauntingly beautiful soundtrack blending delicate melodies with emotional depth.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2024-10-28_-_Songbirds_Cry_-_www.FesliyanStudios.com_.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div>
+      <div class="track">
+        <h3>Saying Goodbye</h3>
+        <p>A heartfelt, emotional soundtrack capturing the bittersweet moments of parting.</p>
+        <div class="audio-player">
+          <audio controls>
+            <source src="{{ url_for('static', filename='/bgmusic/2025-05-05_-_Saying_Goodbye_-_www.FesliyanStudios.com.mp3') }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>          
+        </div>
+      </div> 
+    </div>
+  </section>
+  <footer class="footer">
+    <div class="footer-container">
+        <h3 class="footer-brand">Talk It Out AI</h3>
+        <div class="footer-links">
+            <a href="#" class="footer-link">Security & Privacy</a>
+            <a href="#" class="footer-link" >Ethical AI Statement</a>
+            <a href="mailto:kenny.ojo08@gmail.com" class="footer-link">Support</a>
+        </div>
+        <p class="footer-disclaimer">
+            &copy; 2025 Talk It Out AI. All rights reserved. <br>
+            *Disclaimer:* Talk It Out AI is a wellness support tool and does not constitute professional medical or psychological advice.
+        </p>
+    </div>
+</footer>
+<script>
+  const hamburger = document.getElementById("hamburger");
+  const sidebar = document.getElementById("sidebar");
+  const closeBtn = document.getElementById("closeBtn");
+  
+  // Toggle sidebar when hamburger is clicked
+  hamburger.addEventListener("click", () => {
+    if (sidebar.style.right === "0px") {
+      sidebar.style.right = "-250px"; // Collapse
+    } else {
+      sidebar.style.right = "0"; // Expand
+    }
+  });
+  
+  // Close sidebar when close button is clicked
+  closeBtn.addEventListener("click", () => {
+    sidebar.style.right = "-250px"; // Slide out
+  });
+  
+  // Optional: Close sidebar when clicking outside
+  window.addEventListener("click", (e) => {
+    if (e.target !== sidebar && e.target !== hamburger && !sidebar.contains(e.target)) {
+      sidebar.style.right = "-250px";
+    }
+  });
+  
+  
+      </script>
+</body>
+</html>
+

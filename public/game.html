@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>My Game Arcade</title>
+    <style>
+      :root {
+        --primary: #00ff88;
+        --bg: #0f0f12;
+        --sidebar-bg: #1a1a1f;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-color: var(--bg);
+        color: white;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: row;
+      }
+
+      /* SIDEBAR - Desktop Only */
+      .sidebar {
+        width: 250px;
+        background-color: var(--sidebar-bg);
+        border-right: 1px solid #333;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+        z-index: 10;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary);
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-align: center;
+      }
+
+      .game-btn {
+        background: transparent;
+        border: none;
+        color: #aaa;
+        padding: 15px;
+        text-align: left;
+        font-size: 1rem;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 5px;
+      }
+
+      .game-btn:hover {
+        background-color: #2a2a35;
+        color: white;
+        transform: translateX(5px);
+      }
+
+      .game-btn.active {
+        background-color: var(--primary);
+        color: #0f0f12;
+        font-weight: bold;
+      }
+
+      /* MAIN AREA */
+      .main-content {
+        flex-grow: 1;
+        position: relative;
+        background-image: radial-gradient(#2a2a35 1px, transparent 1px);
+        background-size: 20px 20px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Mobile Header (Hidden on Desktop) */
+      .mobile-nav {
+        display: none;
+        background: var(--sidebar-bg);
+        padding: 10px;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #333;
+      }
+
+      iframe {
+        width: 100%;
+        flex-grow: 1;
+        border: none;
+        display: none;
+      }
+
+      .welcome-screen {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        width: 90%;
+      }
+
+      .welcome-screen h2 {
+        font-size: clamp(1.5rem, 8vw, 3rem);
+        margin: 0;
+        color: #333;
+      }
+
+      /* RESPONSIVE LOGIC */
+      @media (max-width: 768px) {
+        body {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          display: none; /* Hide desktop sidebar */
+        }
+
+        .mobile-nav {
+          display: flex; /* Show mobile nav */
+        }
+
+        /* Full screen menu when not playing */
+        .mobile-menu {
+          display: flex;
+          flex-direction: column;
+          padding: 20px;
+          gap: 10px;
+          overflow-y: auto;
+        }
+
+        .welcome-screen {
+          position: relative;
+          top: 0; left: 0; transform: none;
+          margin-top: 50px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mobile-nav">
+      <div class="logo" style="margin: 0; font-size: 1.2rem;">ArcadeOS</div>
+      <button id="backBtn" class="game-btn" onclick="showMenu()" style="display: none; padding: 5px 10px; margin: 0;">
+        Back to Menu
+      </button>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+      <div class="logo">ArcadeOS</div>
+      <button class="game-btn" onclick="loadGame('snake.html', this)"><span class="game-icon">🐍</span> Neon Snake</button>
+      <button class="game-btn" onclick="loadGame('breaker.html', this)"><span class="game-icon">🧱</span> Brick Breaker</button>
+      <button class="game-btn" onclick="loadGame('memory.html', this)"><span class="game-icon">🧠</span> Memory Match</button>
+      <button class="game-btn" onclick="loadGame('2048.html', this)"><span class="game-icon">🔢</span> 2048 Classic</button>
+      <button class="game-btn" onclick="loadGame('tictactoe.html', this)"><span class="game-icon">❌</span> Tic-Tac-Toe</button>
+      <button class="game-btn" onclick="loadGame('chatbot.html', this)"><span class="game-icon">🧠</span>Go to ChatBot</button>
+    </div>
+
+    <div class="main-content">
+      <div id="mobileMenu" class="mobile-menu" style="display: none;">
+         </div>
+
+      <div class="welcome-screen" id="welcome">
+        <h2>READY</h2>
+        <p>Select a game to start</p>
+      </div>
+
+      <iframe id="gameFrame" src=""></iframe>
+    </div>
+
+    <script>
+      // Clone buttons for mobile view to avoid duplicate HTML
+      const buttons = document.querySelectorAll('.sidebar .game-btn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      buttons.forEach(btn => {
+        const clone = btn.cloneNode(true);
+        clone.onclick = btn.onclick;
+        mobileMenu.appendChild(clone);
+      });
+
+      // Handle Mobile Menu Display
+      function checkWidth() {
+        if (window.innerWidth <= 768) {
+          if (document.getElementById('gameFrame').style.display !== 'block') {
+            mobileMenu.style.display = 'flex';
+          }
+        } else {
+          mobileMenu.style.display = 'none';
+        }
+      }
+
+      function loadGame(filename, btnElement) {
+        // UI Updates
+        document.querySelectorAll(".game-btn").forEach((btn) => btn.classList.remove("active"));
+        btnElement.classList.add("active");
+
+        document.getElementById("welcome").style.display = "none";
+        document.getElementById("mobileMenu").style.display = "none";
+        
+        const frame = document.getElementById("gameFrame");
+        frame.style.display = "block";
+        frame.src = filename;
+
+        // Show back button on mobile
+        if (window.innerWidth <= 768) {
+          document.getElementById('backBtn').style.display = 'flex';
+        }
+
+        frame.onload = () => frame.contentWindow.focus();
+      }
+
+      function showMenu() {
+        document.getElementById("gameFrame").style.display = "none";
+        document.getElementById("gameFrame").src = "";
+        document.getElementById("mobileMenu").style.display = "flex";
+        document.getElementById("welcome").style.display = "block";
+        document.getElementById('backBtn').style.display = 'none';
+        
+        document.querySelectorAll(".game-btn").forEach((btn) => btn.classList.remove("active"));
+      }
+
+      window.onresize = checkWidth;
+      checkWidth();
+    </script>
+  </body>
+</html>

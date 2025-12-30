@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Lounge | Access</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://newwebpay.interswitchng.com/inline-checkout.js"></script>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; text-align: center; padding: 20px; margin: 0; }
+        .locked-overlay { background: rgba(15, 9, 32, 0.9); padding: 2.5rem; border-radius: 16px; border: 2px dashed #ff9800; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .subscribe-btn { background: #ff9800; color: #000; padding: 1rem 2rem; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 1rem; width: 100%; font-size: 1rem; transition: 0.3s; }
+        .subscribe-btn:hover { background: #e68900; transform: scale(1.02); }
+        #premium-content { display: none; width: 100%; max-width: 600px; }
+        #loading-state { font-style: italic; color: #888; }
+        .login-link { color: #ff9800; text-decoration: none; display: block; margin-top: 15px; font-size: 0.9rem; }
+        .subtitle { color: #aaa; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <section class="sound-lounge">
+        <div id="loading-state">Checking your membership...</div>
+    
+        <div id="locked-state" style="display: none;">
+            <div class="locked-overlay">
+                <h2 style="margin-top:0;">🎧 Sound Lounge & Game Arena</h2>
+                <h3>Monthly Subscription</h3>
+                <p>Access high-fidelity tracks and play games for ₦10/month.</p>
+                <button id="payBtn" class="subscribe-btn">Pay ₦10 Now</button>
+                <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">
+                    Your access will be valid for 30 days.
+                </p>
+            </div>
+        </div>
+    
+        <div id="premium-content" style="display: none;">
+            <h2>🎧 Sound Lounge & Game Arena</h2>
+            <p class="subtitle">Premium Access Active</p>
+            <div style="background: #1e1e1e; padding: 40px; border-radius: 12px; border: 1px solid #333;">
+                <p>🎵 <strong>You can now stream</strong> Exclusive High-Fidelity Audio and Play Games</p>
+                <p id="expiry-notice" style="color: #ff9800; font-size: 0.8rem; margin-top: 20px;"></p>
+                <button style= "background: darkorchid; color: #fff;border-radius: 5px; padding: 5px; width: 100%; height: 40px;border: none;"><a style="text-decoration: none;color: #fff;" href="./sound.html">Stream Now</a></button>
+                <button style= "background: darkorchid; color: #fff;border-radius: 5px;margin-top: 30px; padding: 5px; width: 100%; height: 40px;border: none;"><a style="text-decoration: none;color: #fff;" href="./game.html">Play Now</a></button>
+            </div>
+        </div>
+    </section>
+
+   
+<script type="text/javascript">
+   (function(){
+      emailjs.init("ZD0HdI2AIauZE9cz-"); // Replace with your EmailJS Public Key
+   })();
+</script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+    
+        // 1. FIREBASE CONFIG (Updated with your keys)
+        const firebaseConfig = {
+            apiKey: "FIREBASE_API_KEY",
+            authDomain: "login-demo-4a733.firebaseapp.com",
+            projectId: "login-demo-4a733",
+            storageBucket: "login-demo-4a733.firebasestorage.app",
+            messagingSenderId: "78719888700",
+            appId: "1:78719888700:web:a5deb2ad505c25e8a04239"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+    
+        let currentUser = null;
+    
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                checkSubscription(user.uid);
+            } else {
+                // If user is not logged in, redirect to login page
+                // Adjust this path if your login file is in a different folder
+                window.location.href = "login.html"; 
+            }
+        });
+    
+        function checkSubscription(uid) {
+            const userDocRef = doc(db, "users", uid);
+            
+            onSnapshot(userDocRef, (docSnap) => {
+                const loadingEl = document.getElementById('loading-state');
+                if (loadingEl) loadingEl.style.display = 'none';
+                
+                const data = docSnap.data();
+                const lockedEl = document.getElementById('locked-state');
+                const premiumEl = document.getElementById('premium-content');
+                const expiryNotice = document.getElementById('expiry-notice');
+    
+                const now = new Date();
+                const expiryDate = data?.expiryDate ? new Date(data.expiryDate) : null;
+    
+                // VALIDATION: Is status active AND is the date still valid?
+                if (data?.subscriptionStatus === 'active' && expiryDate && expiryDate > now) {
+                    lockedEl.style.display = 'none';
+                    premiumEl.style.display = 'block';
+                    
+                    const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                    expiryNotice.innerText = `Your subscription expires in ${daysLeft} days.`;
+                } else {
+                    lockedEl.style.display = 'block';
+                    premiumEl.style.display = 'none';
+                    initPayButton();
+                }
+            });
+        }
+    
+        function initPayButton() {
+            const payBtn = document.getElementById("payBtn");
+            if (!payBtn) return;
+
+            // Clone to remove old listeners
+            const newBtn = payBtn.cloneNode(true);
+            payBtn.parentNode.replaceChild(newBtn, payBtn);
+    
+            newBtn.addEventListener("click", () => {
+               const paymentRequest = {
+    merchant_code: "MX153376",
+    pay_item_id: "7139718",
+    txn_ref: "SUB-" + Date.now(),
+    amount: "1000", // Correct: ₦1000 = 100000 kobo
+    currency: "566",
+    site_redirect_url: "sound.html",  // Or a specific URL like "https://yourdomain.com/payment-response.html"
+    onComplete: (res) => {
+        if (res && (res.resp === "00" || res.status === "SUCCESS" || res.resp === "058")) {
+            processSuccessfulPayment();
+        } else {
+            // Optional: Handle failure/cancellation
+            alert("Payment failed or cancelled. Please try again.");
+            console.log("Payment response:", res);
+        }
+    },
+    mode: 'TEST'
+};
+                if (window.webpayCheckout) window.webpayCheckout(paymentRequest);
+            });
+        }
+    
+        // Add sendEmail call inside your existing function
+async function processSuccessfulPayment() {
+    if (!currentUser) return;
+
+    const expiry = new Date();
+    expiry.setDate(expiry.getDate() + 30);
+    const expiryString = expiry.toLocaleDateString(); // Human-readable date for the email
+
+    const userDocRef = doc(db, "users", currentUser.uid);
+    
+    try {
+        // 1. Update Firestore first
+        await updateDoc(userDocRef, { 
+            subscriptionStatus: 'active',
+            expiryDate: expiry.toISOString(),
+            lastPaymentDate: new Date().toISOString()
+        });
+
+        // 2. Trigger EmailJS
+        const templateParams = {
+            email: currentUser.email,
+            firstName: currentUser.displayName || "Subscriber",
+            expiry_date: expiryString,
+            message: "Your 30-day premium access to Sound Lounge is now active!"
+        };
+
+        window.emailjs.send('service_8edfauv', 'template_9v8jok5', templateParams)
+            .then((response) => {
+               console.log('Email sent successfully!', response.status, response.text);
+            }, (err) => {
+               console.error('Email failed to send...', err);
+            });
+
+    } catch (e) {
+        console.error("Error:", e);
+        alert("Payment successful, but we had trouble updating your account.");
+    }
+}
+    </script>
+</body>
+</html>

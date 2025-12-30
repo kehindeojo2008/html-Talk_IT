@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Memory Logic</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent; /* Remove blue flash on mobile tap */
+      }
+      body {
+        background: #2c3e50;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        color: white;
+        overflow: hidden; /* Prevents scrolling during play */
+      }
+
+      .stats {
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      /* THE GRID: Optimized for different screens */
+      .game-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        width: 95vw;
+        max-width: 500px;
+        /* Responsive height for square cards */
+        aspect-ratio: 1 / 1;
+        perspective: 1000px;
+      }
+
+      .card {
+        background-color: transparent;
+        cursor: pointer;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .card.flipped { transform: rotateY(180deg); }
+      .card.matched { transform: rotateY(180deg); opacity: 0.4; cursor: default; }
+
+      .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem; /* Slightly smaller for mobile compatibility */
+        backface-visibility: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .card-front {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .card-front::after { content: "?"; }
+
+      .card-back {
+        background: white;
+        transform: rotateY(180deg);
+      }
+
+      button {
+        padding: 8px 20px;
+        background: #e74c3c;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      button:active { transform: scale(0.9); }
+
+      /* Win Overlay */
+      #overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        text-align: center;
+      }
+
+      @media (max-width: 400px) {
+        .card-face { font-size: 2rem; }
+        .game-grid { gap: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stats">
+      <span>Moves: <b id="moves">0</b></span>
+      <button onclick="restartGame()">Restart</button>
+    </div>
+
+    <div class="game-grid" id="grid"></div>
+
+    <div id="overlay">
+      <h1 style="font-size: 3rem; margin-bottom: 10px;">Winner!</h1>
+      <p id="final-stats" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
+      <button onclick="restartGame()" style="font-size: 1.2rem; padding: 15px 30px;">Play Again</button>
+    </div>
+
+    <script>
+      const grid = document.getElementById("grid");
+      const movesDisplay = document.getElementById("moves");
+      const overlay = document.getElementById("overlay");
+      const finalStats = document.getElementById("final-stats");
+
+      const emojies = ["🚀","🚀","🍕","🍕","🐱","🐱","🌵","🌵","🎸","🎸","💎","💎","🍦","🍦","🎈","🎈"];
+
+      let flippedCards = [];
+      let lockBoard = false;
+      let moves = 0;
+      let matchedPairs = 0;
+
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function createBoard() {
+        grid.innerHTML = "";
+        overlay.style.display = "none";
+        const shuffled = shuffle([...emojies]);
+
+        shuffled.forEach((emoji) => {
+          const card = document.createElement("div");
+          card.classList.add("card");
+          card.dataset.value = emoji;
+
+          const front = document.createElement("div");
+          front.classList.add("card-face", "card-front");
+
+          const back = document.createElement("div");
+          back.classList.add("card-face", "card-back");
+          back.innerText = emoji;
+
+          card.appendChild(front);
+          card.appendChild(back);
+          card.addEventListener("click", flipCard);
+          grid.appendChild(card);
+        });
+      }
+
+      function flipCard() {
+        if (lockBoard) return;
+        if (this === flippedCards[0]) return;
+        if (this.classList.contains('matched')) return;
+
+        this.classList.add("flipped");
+        flippedCards.push(this);
+
+        if (flippedCards.length === 2) {
+          moves++;
+          movesDisplay.innerText = moves;
+          checkForMatch();
+        }
+      }
+
+      function checkForMatch() {
+        const isMatch = flippedCards[0].dataset.value === flippedCards[1].dataset.value;
+        isMatch ? disableCards() : unflipCards();
+      }
+
+      function disableCards() {
+        flippedCards[0].classList.add("matched");
+        flippedCards[1].classList.add("matched");
+        
+        matchedPairs++;
+        if (matchedPairs === 8) {
+          setTimeout(() => {
+            finalStats.innerText = `You cleared the board in ${moves} moves.`;
+            overlay.style.display = "flex";
+          }, 600);
+        }
+        resetBoard();
+      }
+
+      function unflipCards() {
+        lockBoard = true;
+        setTimeout(() => {
+          flippedCards[0].classList.remove("flipped");
+          flippedCards[1].classList.remove("flipped");
+          resetBoard();
+        }, 1000);
+      }
+
+      function resetBoard() {
+        [flippedCards, lockBoard] = [[], false];
+      }
+
+      function restartGame() {
+        matchedPairs = 0;
+        moves = 0;
+        movesDisplay.innerText = moves;
+        createBoard();
+      }
+
+      createBoard();
+    </script>
+  </body>
+</html>
